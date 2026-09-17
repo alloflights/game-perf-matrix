@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>手游性能与PC端适配全景看板 (纯本地离线单文件版)</title>
+  <style>
+    /* 100% 零网络依赖纯内联样式 - 无需任何外部 CDN 或云端支持 */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #0b0f19;
+      color: #f3f4f6;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      padding: 16px;
+    }
+    @media (min-width: 768px) { body { padding: 32px; } }
+    .max-w-7xl { max-width: 1280px; margin: 0 auto; }
+    .space-y-6 > * + * { margin-top: 24px; }
+    .space-y-3 > * + * { margin-top: 12px; }
+    .space-y-2 > * + * { margin-top: 8px; }
+
+    /* 卡片容器 */
+    .card {
+      background-color: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      position: relative;
+    }
+
+    /* 布局系统 */
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .flex-wrap { flex-wrap: wrap; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-2 { gap: 8px; }
+    .gap-3 { gap: 12px; }
+    .gap-4 { gap: 16px; }
+    .gap-6 { gap: 24px; }
+    .grid { display: grid; }
+    @media (min-width: 1024px) {
+      .lg-grid-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+      .lg-col-8 { grid-column: span 8 / span 8; }
+      .lg-col-4 { grid-column: span 4 / span 4; }
+      .flex-row-md { flex-direction: row; }
+    }
+
+    /* 按钮与交互标签 */
+    .btn-cat {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      background-color: #1e293b;
+      color: #94a3b8;
+      transition: all 0.2s ease;
+    }
+    .btn-cat:hover { background-color: #334155; color: #fff; }
+    .btn-cat.active { background-color: #0284c7; color: #fff; }
+
+    /* SVG 样式 */
+    .grid-line { stroke: #1f2937; stroke-dasharray: 4,4; }
+    .trend-line { stroke: #38bdf8; stroke-width: 2.5; stroke-dasharray: 6,6; fill: none; }
+    .quadrant-box { fill-opacity: 0.04; stroke-width: 1; stroke-dasharray: 3,3; }
+    .point-circle { cursor: pointer; transition: all 0.2s ease; }
+    .point-circle:hover { r: 9; filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.8)); }
+    .active-point { r: 10 !important; stroke: #ffffff !important; stroke-width: 2.5 !important; }
+    .tooltip-box { pointer-events: none; transition: opacity 0.15s ease; }
+
+    /* 数据表 */
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+    th { background-color: #0f172a; color: #94a3b8; padding: 10px 12px; font-weight: 600; border-bottom: 1px solid #1f2937; position: sticky; top: 0; }
+    td { padding: 10px 12px; border-bottom: 1px solid #1f2937; color: #cbd5e1; }
+    tr.data-row:hover { background-color: rgba(30, 41, 59, 0.6); cursor: pointer; }
+    tr.active-row { background-color: rgba(6, 182, 212, 0.15) !important; border-left: 3px solid #38bdf8; }
+
+    /* 文本与细节 */
+    .text-cyan { color: #38bdf8; }
+    .text-emerald { color: #34d399; }
+    .text-amber { color: #fbbf24; }
+    .text-rose { color: #f43f5e; }
+    .text-sub { color: #94a3b8; font-size: 12px; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="max-w-7xl space-y-6">
+    <!-- Header -->
+    <header class="card">
+      <div class="flex flex-col flex-row-md justify-between items-center gap-4">
+        <div>
+          <div class="flex items-center gap-2" style="margin-bottom: 6px;">
+            <span class="badge" style="background-color: rgba(6,182,212,0.2); color: #38bdf8; border: 1px solid rgba(6,182,212,0.4);">
+              离线极速单文件版 · 零依赖
+            </span>
+            <span class="text-sub">涵盖国内畅销榜 Top 50 + Supercell 核心矩阵</span>
+          </div>
+          <h1 style="font-size: 24px; font-weight: bold; color: #fff;">手游性能负荷 ✕ 电脑端体验迁移全景矩阵</h1>
+          <p class="text-sub" style="margin-top: 4px; max-width: 800px;">
+            量化手机最低畅玩芯片门槛与 PC 端相对体验关系。支持无网离线、手机平板及电脑本地双击秒开。
+          </p>
+        </div>
+        <div class="flex items-center gap-3" style="background: rgba(11,15,25,0.6); padding: 10px 16px; border-radius: 12px; border: 1px solid #1f2937;">
+          <div style="text-align: center; padding-right: 14px; border-right: 1px solid #1f2937;">
+            <div style="font-size: 20px; font-weight: bold; color: #38bdf8;">55+</div>
+            <div class="text-sub" style="font-size: 10px;">分析样本</div>
+          </div>
+          <div style="text-align: center; padding-right: 14px; border-right: 1px solid #1f2937;">
+            <div style="font-size: 20px; font-weight: bold; color: #34d399;">9款</div>
+            <div class="text-sub" style="font-size: 10px;">PC完美上位</div>
+          </div>
+          <div style="text-align: center;">
+            <div style="font-size: 20px; font-weight: bold; color: #fbbf24;">四象限</div>
+            <div class="text-sub" style="font-size: 10px;">交互归因</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="card" style="padding: 12px 16px;">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-sub" style="font-weight: 600; margin-right: 4px;">品类筛选:</span>
+          <button onclick="filterCategory('all')" id="btn-all" class="btn-cat active">全部品类</button>
+          <button onclick="filterCategory('act')" id="btn-act" class="btn-cat">开放世界/动作</button>
+          <button onclick="filterCategory('fps')" id="btn-fps" class="btn-cat">战术射击</button>
+          <button onclick="filterCategory('moba')" id="btn-moba" class="btn-cat">MOBA/双摇杆</button>
+          <button onclick="filterCategory('slg_rpg')" id="btn-slg_rpg" class="btn-cat">回合/SLG/放置</button>
+          <button onclick="filterCategory('sc')" id="btn-sc" class="btn-cat">Supercell专属</button>
+          <button onclick="filterCategory('casual')" id="btn-casual" class="btn-cat">休闲/棋牌/消除</button>
+        </div>
+        <div class="flex items-center gap-3 text-sub">
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="toggle-trend" checked onchange="toggleTrendLine()">
+            <span>拟合趋势线</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="toggle-quadrant" checked onchange="toggleQuadrants()">
+            <span>四象限背景</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Visual Matrix Section -->
+    <div class="grid lg-grid-12 gap-6">
+      
+      <!-- Scatter Plot (8 Cols) -->
+      <div class="lg-col-8 card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="flex items-center justify-between" style="margin-bottom: 8px;">
+          <div>
+            <h2 style="font-size: 15px; font-weight: bold; color: #fff;">手机性能需求 ✕ PC端适配体验 散点矩阵</h2>
+            <p class="text-sub" style="font-size: 11px;">点击任意圆点或标签查看深度参数 | 气泡支持防遮挡弹性避让</p>
+          </div>
+          <span class="text-cyan" style="font-size: 12px; font-family: monospace;" id="visible-count">显示 52 款游戏</span>
+        </div>
+
+        <!-- Responsive SVG Viewport -->
+        <div style="background: rgba(11,15,25,0.7); border: 1px solid #1f2937; border-radius: 12px; padding: 8px;">
+          <svg id="scatter-chart" style="width: 100%; height: auto; display: block;" viewBox="0 0 800 500">
+            <!-- Quadrants -->
+            <g id="quadrants-layer">
+              <rect x="440" y="30" width="330" height="210" class="quadrant-box" style="fill: #38bdf8; stroke: rgba(56,189,248,0.2);"/>
+              <text x="760" y="46" fill="#38bdf8" font-size="10.5" font-weight="bold" text-anchor="end" opacity="0.8">象限 I · PC完美上位区</text>
+
+              <rect x="80" y="30" width="360" height="210" class="quadrant-box" style="fill: #34d399; stroke: rgba(52,211,153,0.2);"/>
+              <text x="90" y="46" fill="#34d399" font-size="10.5" font-weight="bold" opacity="0.8">象限 II · 策略大屏挂机区</text>
+
+              <rect x="80" y="240" width="360" height="210" class="quadrant-box" style="fill: #f43f5e; stroke: rgba(244,63,94,0.2);"/>
+              <text x="90" y="444" fill="#fb7185" font-size="10.5" font-weight="bold" opacity="0.8">象限 III · 触控原生折损区</text>
+
+              <rect x="440" y="240" width="330" height="210" class="quadrant-box" style="fill: #94a3b8; stroke: rgba(148,163,184,0.2);"/>
+              <text x="760" y="444" fill="#94a3b8" font-size="10.5" font-weight="bold" text-anchor="end" opacity="0.8">象限 IV · 高负荷移植受限区</text>
+            </g>
+
+            <!-- Grid Lines -->
+            <line x1="80" y1="60" x2="770" y2="60" class="grid-line" />
+            <line x1="80" y1="150" x2="770" y2="150" class="grid-line" />
+            <line x1="80" y1="240" x2="770" y2="240" stroke="#475569" stroke-width="1.2" />
+            <line x1="80" y1="330" x2="770" y2="330" class="grid-line" />
+            <line x1="80" y1="420" x2="770" y2="420" class="grid-line" />
+
+            <line x1="140" y1="30" x2="140" y2="450" class="grid-line" />
+            <line x1="290" y1="30" x2="290" y2="450" class="grid-line" />
+            <line x1="440" y1="30" x2="440" y2="450" stroke="#475569" stroke-width="1.2" />
+            <line x1="590" y1="30" x2="590" y2="450" class="grid-line" />
+            <line x1="730" y1="30" x2="730" y2="450" class="grid-line" />
+
+            <!-- Y Axis Labels -->
+            <text x="25" y="64" fill="#38bdf8" font-size="11" font-weight="bold">完美上位</text>
+            <text x="25" y="154" fill="#34d399" font-size="11">比手机略好</text>
+            <text x="25" y="244" fill="#fbbf24" font-size="11">相仿/互有优缺</text>
+            <text x="25" y="334" fill="#f87171" font-size="11">比手机稍差</text>
+            <text x="25" y="424" fill="#94a3b8" font-size="11">完全无/极差</text>
+
+            <!-- X Axis Labels -->
+            <text x="140" y="475" fill="#94a3b8" font-size="10" text-anchor="middle">L1 (778G / A13)</text>
+            <text x="290" y="475" fill="#94a3b8" font-size="10" text-anchor="middle">L2 (870 / A15)</text>
+            <text x="440" y="475" fill="#94a3b8" font-size="10" text-anchor="middle">L3 (8Gen2 / A16)</text>
+            <text x="590" y="475" fill="#94a3b8" font-size="10" text-anchor="middle">L4 (8Gen3 / A18)</text>
+            <text x="730" y="475" fill="#38bdf8" font-size="10" font-weight="bold" text-anchor="middle">L5 (8Elite / A19P)</text>
+
+            <!-- Trend Curve -->
+            <path id="trend-overall" class="trend-line" d="M 120 340 Q 280 320, 440 210 T 730 65" />
+
+            <!-- Points Layer -->
+            <g id="points-layer"></g>
+
+            <!-- Tooltip -->
+            <g id="chart-tooltip" class="tooltip-box" style="opacity: 0;">
+              <rect x="0" y="0" width="165" height="54" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+              <text id="tooltip-title" x="12" y="20" fill="#fff" font-size="11.5" font-weight="bold">游戏标题</text>
+              <text id="tooltip-sub" x="12" y="38" fill="#94a3b8" font-size="10">性能: L4 | 评级: 完美上位</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between text-sub" style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #1f2937; font-size: 11px;">
+          <div class="flex flex-wrap items-center gap-3">
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; margin-right: 4px;"></span>开放世界/动作</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; margin-right: 4px;"></span>战术射击</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f43f5e; margin-right: 4px;"></span>MOBA/双摇杆</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399; margin-right: 4px;"></span>回合/SLG</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; margin-right: 4px;"></span>Supercell</span>
+            <span><span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #64748b; margin-right: 4px;"></span>休闲/消除</span>
+          </div>
+          <span>X: 手机硬件门槛 ➔ | Y: PC体验增益 ⬆</span>
+        </div>
+      </div>
+
+      <!-- Right Detail Panel (4 Cols) -->
+      <div class="lg-col-4 space-y-4">
+        <!-- Inspector Card -->
+        <div id="inspector-card" class="card">
+          <div class="flex justify-between items-start">
+            <div>
+              <span id="card-category" class="badge" style="background: rgba(6,182,212,0.2); color: #38bdf8;">开放世界 RPG</span>
+              <h3 id="card-name" style="font-size: 18px; font-weight: bold; color: #fff; margin-top: 6px;">原神 (Genshin Impact)</h3>
+              <p id="card-rank" class="text-sub">畅销榜常青树 | 米哈游</p>
+            </div>
+            <div id="card-tier-badge" class="badge" style="background: rgba(6,182,212,0.2); color: #38bdf8; border: 1px solid rgba(6,182,212,0.4); padding: 4px 8px;">
+              Tier 1 完美上位
+            </div>
+          </div>
+
+          <div style="margin-top: 14px;" class="space-y-3">
+            <div style="background: rgba(11,15,25,0.6); padding: 12px; border-radius: 10px; border: 1px solid #1f2937;" class="space-y-2">
+              <div class="flex justify-between items-center text-sub">
+                <span>最低畅玩门槛</span>
+                <span id="card-soc" style="font-family: monospace; font-weight: bold; color: #fbbf24;">骁龙 8 Gen 2 / 苹果 A16</span>
+              </div>
+              <div class="flex justify-between items-center text-sub">
+                <span>旗舰推荐芯片</span>
+                <span id="card-top-soc" style="font-family: monospace; font-weight: bold; color: #38bdf8;">骁龙 8 Elite / 苹果 A19 Pro</span>
+              </div>
+              <div class="flex justify-between items-center text-sub">
+                <span>PC端技术形态</span>
+                <span id="card-pc-tech" style="font-family: monospace; color: #38bdf8;">原生独立客户端 (DirectX 11)</span>
+              </div>
+            </div>
+
+            <div>
+              <h4 style="font-size: 11px; font-weight: 600; color: #cbd5e1; margin-bottom: 4px;">核心跨端体验剖析:</h4>
+              <p id="card-desc" style="font-size: 11.5px; color: #94a3b8; line-height: 1.6; background: rgba(15,23,42,0.6); padding: 10px; border-radius: 8px; border: 1px solid #1e293b;">
+                4K 贴图、体积光、全屏抗锯齿带来断层级画质提升；键鼠视角旋转与连招切人手感流畅，弓箭爆头瞄准碾压触屏搓玻璃，彻底告别移动设备发热锁频。
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scoreboard Card -->
+        <div class="card" style="padding: 16px;">
+          <h3 style="font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 10px;" class="flex justify-between">
+            <span>梯队样本分布统计</span>
+            <span class="text-sub">共计 55 款样本</span>
+          </h3>
+          <div class="space-y-2" style="font-size: 11px;">
+            <div>
+              <div class="flex justify-between text-sub" style="margin-bottom: 3px;">
+                <span class="text-cyan">Tier 1: 完美上位替代</span>
+                <span>9款 (17.3%)</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                <div style="width: 17.3%; height: 100%; background: #38bdf8;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sub" style="margin-bottom: 3px;">
+                <span class="text-emerald">Tier 2: 比手机端略好</span>
+                <span>10款 (19.2%)</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                <div style="width: 19.2%; height: 100%; background: #34d399;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sub" style="margin-bottom: 3px;">
+                <span class="text-amber">Tier 3: 相仿/互有优缺</span>
+                <span>11款 (21.2%)</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                <div style="width: 21.2%; height: 100%; background: #fbbf24;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sub" style="margin-bottom: 3px;">
+                <span class="text-rose">Tier 4: 比手机端稍差</span>
+                <span>10款 (19.2%)</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                <div style="width: 19.2%; height: 100%; background: #f43f5e;"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-sub" style="margin-bottom: 3px;">
+                <span style="color: #64748b;">Tier 5: 完全没有/极差</span>
+                <span>12款 (23.1%)</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden;">
+                <div style="width: 23.1%; height: 100%; background: #64748b;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="card">
+      <div class="flex flex-col flex-row-md justify-between items-center gap-3" style="margin-bottom: 14px;">
+        <div>
+          <h3 style="font-size: 15px; font-weight: bold; color: #fff;">全量数据集 (支持检索与联动)</h3>
+          <p class="text-sub">点击任意行可实时联动上方图表与详情卡片</p>
+        </div>
+        <input type="text" id="table-search" placeholder="搜索游戏、芯片或定级..." oninput="handleTableSearch()" style="background: #0f172a; border: 1px solid #334155; color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 12px; width: 220px; outline: none;">
+      </div>
+
+      <div style="max-height: 380px; overflow-y: auto; border: 1px solid #1f2937; border-radius: 8px;">
+        <table>
+          <thead>
+            <tr>
+              <th>游戏名称</th>
+              <th>品类</th>
+              <th style="text-align: center;">性能等级</th>
+              <th>最低畅玩芯片 (2026标准)</th>
+              <th>PC端形态</th>
+              <th style="text-align: center;">PC端定级</th>
+            </tr>
+          </thead>
+          <tbody id="games-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // 纯内联原生 JS 逻辑，无第三方库
+    const gamesData = [
+      { id: "genshin", name: "原神", cat: "act", perf: 3.8, exp: 5, soc: "骁龙 8 Gen 2 / 苹果 A16", topSoc: "骁龙 8 Elite / 苹果 A19 Pro", pcTech: "原生独立客户端 (DirectX 11)", tier: "Tier 1: 完美上位替代", desc: "4K 贴图与超远视距；键鼠切换角色连招顺畅，弓箭弱点爆头精度碾压触屏搓玻璃，彻底告别手机烫手降频。", rank: "畅销常青 #38" },
+      { id: "wuthering", name: "鸣潮", cat: "act", perf: 4.8, exp: 5, soc: "骁龙 8 Gen 3 / 苹果 A17 Pro", topSoc: "骁龙 8 Elite / 苹果 A19 Pro", pcTech: "原生独立客户端 (UE4/120帧)", tier: "Tier 1: 完美上位替代", desc: "虚幻4在手机端发热严重；PC端支持120帧与DLSS，高频弹刀、空中挑空与极闪必须依赖键鼠/手柄微秒级响应。", rank: "热度顶流" },
+      { id: "zzz", name: "绝区零", cat: "act", perf: 4.2, exp: 5, soc: "骁龙 8+ Gen 1 / 苹果 A16", topSoc: "骁龙 8 Gen 3 / 苹果 A18", pcTech: "原生独立客户端", tier: "Tier 1: 完美上位替代", desc: "高速连携 QTE 与格挡弹刀，PC 端手柄震动反馈达到纯单机标准，手机双拇指遮挡两侧受击视野。", rank: "热度顶流" },
+      { id: "delta", name: "三角洲行动", cat: "fps", perf: 4.6, exp: 5, soc: "骁龙 8 Gen 3 / 苹果 A17 Pro", topSoc: "骁龙 8 Elite / 苹果 A19 Pro", pcTech: "原生次时代 PC 客户端", tier: "Tier 1: 完美上位替代", desc: "纯血战术射击原生大作，键鼠精准压枪与大屏侦查对枪完全降维打击触屏，手机端更适合作为日常整理仓库的副终端。", rank: "畅销榜 #3" },
+      { id: "valorant_m", name: "无畏契约：源能行动", cat: "fps", perf: 4.3, exp: 5, soc: "骁龙 8 Gen 3 / 苹果 A17 Pro", topSoc: "骁龙 8 Elite / 苹果 A19 Pro", pcTech: "PC 原生端游生态完全体", tier: "Tier 1: 完美上位替代", desc: "PC 端游拥有 240Hz+ 超高刷电竞环境、毫秒级防作弊与顶尖键鼠射击手感，在电脑端游玩体验属于纯正的电竞级降维打击。", rank: "畅销榜 #9" },
+      { id: "gp", name: "和平精英 (PUBG生态)", cat: "fps", perf: 3.5, exp: 4.8, soc: "骁龙 870 / 苹果 A15", topSoc: "骁龙 8 Gen 3 / 苹果 A18", pcTech: "PC 原生端游生态完全体", tier: "Tier 1: 完美上位替代", desc: "电脑端具备原生 4K 超大视距、战术听声辨位与独立电竞键鼠操作，视听与沉浸感对手机搓玻璃构成绝对上位替代。", rank: "畅销榜 #7" },
+      { id: "nikke", name: "胜利女神：妮姬", cat: "fps", perf: 2.2, exp: 4.8, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 8+ Gen 1 / 苹果 A15", pcTech: "原生 21:9 超宽屏客户端", tier: "Tier 1: 完美上位替代", desc: "官方PC端支持原生超宽横屏渲染，大幅拓宽左右两侧战场视野，提前数秒预判红圈与自爆怪，鼠标集火极度精准。", rank: "海外常青" },
+      { id: "snowbreak", name: "尘白禁区", cat: "fps", perf: 3.4, exp: 5, soc: "骁龙 870 / 苹果 A15", topSoc: "骁龙 8 Gen 3 / 苹果 A18", pcTech: "原生虚幻独立客户端", tier: "Tier 1: 完美上位替代", desc: "手机端搓玻璃瞄准射击极其别扭；PC端纯正 TPS 射击手感与身法跳跃，玩家与官方已公认其为主 PC 游戏。", rank: "热度黑马" },
+      { id: "roco", name: "洛克王国：世界", cat: "act", perf: 4.4, exp: 4.9, soc: "骁龙 8 Gen 3 / 苹果 A17 Pro", topSoc: "骁龙 8 Elite / 苹果 A19 Pro", pcTech: "原生独立 PC 客户端", tier: "Tier 1: 完美上位替代", desc: "次时代大世界探索与宠物捕捉，大屏展示精致光影与广阔全景，技能快捷键操作从容。", rank: "畅销榜 #37" },
+      { id: "justice", name: "逆水寒手游", cat: "act", perf: 4.7, exp: 4.8, soc: "骁龙 8 Gen 3 / 苹果 A17 Pro", topSoc: "骁龙 8 Elite / 苹果 A19 Pro", pcTech: "原生独立客户端 (光追支持)", tier: "Tier 1: 完美上位替代", desc: "PC 端画质直逼显卡跑分大作，展开完整 MMO 技能栏与一键宏，彻底解放手机续航与电池寿命。", rank: "长青大作" },
+
+      { id: "hsr", name: "崩坏：星穹铁道", cat: "slg_rpg", perf: 3.3, exp: 4.1, soc: "骁龙 870 / 苹果 A15", topSoc: "骁龙 8 Gen 3 / 苹果 A18", pcTech: "原生独立客户端", tier: "Tier 2: 比手机端略好", desc: "PC 端视效拔群；但由于回合制战斗支持自动挂机，手机端“躺着刷本”的碎片化体验极佳，PC 端属于视效升级但非必需。", rank: "畅销常青" },
+      { id: "whiteout", name: "无尽冬日", cat: "slg_rpg", perf: 1.3, exp: 3.8, soc: "骁龙 695 / 苹果 A13", topSoc: "骁龙 778G / 苹果 A14", pcTech: "官方桌面端 / 微信PC端", tier: "Tier 2: 比手机端略好", desc: "宽屏看雪原大地图与同盟战局开阔，打城看战报清晰；但本质依然是放置数值游戏，手机玩同样方便。", rank: "畅销榜 #6" },
+      { id: "mhxy", name: "梦幻西游", cat: "slg_rpg", perf: 1.2, exp: 4.2, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "官方原生互通桌面版", tier: "Tier 2: 比手机端略好", desc: "网易自研桌面互通版，支持稳定多开、大屏摆摊与抓鬼跑环，彻底不伤手机电池与发热。", rank: "畅销榜 #8" },
+      { id: "yys", name: "阴阳师", cat: "slg_rpg", perf: 1.4, exp: 4.0, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A14", pcTech: "官方原生桌面版 / Steam", tier: "Tier 2: 比手机端略好", desc: "高清 4K 立绘，长时间挂魂土、整理成千上万御魂比手机小屏幕效率高得多。", rank: "畅销榜 #16" },
+      { id: "sanguo_strat", name: "三国志·战略版", cat: "slg_rpg", perf: 1.5, exp: 4.1, soc: "骁龙 695 / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方独立桌面客户端", tier: "Tier 2: 比手机端略好", desc: "大屏看九宫格沙盘大局观极佳，同盟指挥调度与多账号铺路方便。", rank: "畅销榜 #18" },
+      { id: "dhxy", name: "大话西游", cat: "slg_rpg", perf: 1.2, exp: 4.0, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "官方独立桌面版", tier: "Tier 2: 比手机端略好", desc: "稳定多开刷任务，经典回合制老 IP 在 PC 屏幕上更贴合原端游习惯。", rank: "畅销榜 #26" },
+      { id: "stzb", name: "率土之滨", cat: "slg_rpg", perf: 1.3, exp: 4.0, soc: "骁龙 695 / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方独立桌面版", tier: "Tier 2: 比手机端略好", desc: "州战沙盘铺路调兵大屏一览无余，多开小号驻守省心省电。", rank: "畅销榜 #28" },
+      { id: "qnxh", name: "倩女幽魂", cat: "slg_rpg", perf: 1.4, exp: 3.9, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A14", pcTech: "官方独立桌面端", tier: "Tier 2: 比手机端略好", desc: "一条龙日常任务挂机利器，帮战大屏不卡顿。", rank: "畅销榜 #49" },
+      { id: "afk_journey", name: "剑与远征：启程", cat: "slg_rpg", perf: 2.1, exp: 3.9, soc: "骁龙 778G / 苹果 A14", topSoc: "骁龙 8+ Gen 1 / 苹果 A16", pcTech: "官方横屏 PC 客户端", tier: "Tier 2: 比手机端略好", desc: "横屏 3D 大地图探索视野开阔，战场布阵全局感知清晰；但本质依然是放置收菜游戏。", rank: "海外/国内热门" },
+      { id: "reverse1999", name: "重返未来：1999", cat: "slg_rpg", perf: 2.0, exp: 3.9, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方桌面端", tier: "Tier 2: 比手机端略好", desc: "优秀的高清立绘演出与高保真音频输出，摸鱼方便；但发牌点选在手机上同样顺手。", rank: "常青卡牌" },
+
+      { id: "hearthstone", name: "炉石传说", cat: "slg_rpg", perf: 2.1, exp: 3.0, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "原生战网 PC 客户端", tier: "Tier 3: 相仿/互有优缺", desc: "PC 优在记牌器插件生态成熟、拔线跳过长动画；手机优在随时随地躺着开一局，出牌体验基本五五开。", rank: "畅销榜 #45" },
+      { id: "jjc", name: "金铲铲之战", cat: "slg_rpg", perf: 2.4, exp: 3.1, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "官方桌面助手 / 模拟器定制", tier: "Tier 3: 相仿/互有优缺", desc: "PC 优在观察全场站位；手机优在快速搜卡（D牌）时双指抓牌速度远快于单个鼠标指针大幅摆动。", rank: "畅销榜 #4" },
+      { id: "wzxq", name: "王者万象棋", cat: "slg_rpg", perf: 2.3, exp: 3.0, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方桌面模拟器", tier: "Tier 3: 相仿/互有优缺", desc: "大屏清晰观察棋子阵容 vs 触屏双手快速拖拽棋子装备。", rank: "畅销榜 #11" },
+      { id: "coc", name: "部落冲突 (CoC)", cat: "sc", perf: 1.4, exp: 2.8, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A14", pcTech: "Google Play Games PC", tier: "Tier 3: 相仿/互有优缺", desc: "大屏看阵型全景极爽；但高本战“多指同时下兵”鼠标单指针完全无法做到，硬核对战属于操作劣势。", rank: "SC / 畅销 #35" },
+      { id: "cr", name: "皇室战争 (CR)", cat: "sc", perf: 1.3, exp: 3.0, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "Google Play Games PC", tier: "Tier 3: 相仿/互有优缺", desc: "鼠标拖拽下兵定位稳，但手机双手大拇指选卡切牌更敏捷，综合体验不分伯仲。", rank: "SC 核心" },
+      { id: "arknights", name: "明日方舟", cat: "slg_rpg", perf: 1.5, exp: 3.1, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A14", pcTech: "官方合作启动器 / 模拟器", tier: "Tier 3: 相仿/互有优缺", desc: "PC 看录像时间轴清晰且不发热；触屏拖拽部署干员与瞬发技能有自然的物理本能反馈。", rank: "二次元常青" },
+      { id: "umamusume", name: "赛马娘", cat: "slg_rpg", perf: 2.6, exp: 3.0, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "日服 DMM PC 客户端", tier: "Tier 3: 相仿/互有优缺", desc: "Live 演出大屏全屏极具震撼感；但数十万次的重复培育基于竖屏点选，坐在电脑前机械点击极易疲劳。", rank: "海外常青" },
+      { id: "idv", name: "第五人格", cat: "act", perf: 3.0, exp: 3.3, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "官方独立 PC 互通版", tier: "Tier 3: 相仿/互有优缺", desc: "键鼠转视角与溜鬼微操更准，但官方实行独立 PC 匹配池，排队时间显著长于手机端。", rank: "畅销榜 #23" },
+      { id: "ruyuan", name: "如鸢", cat: "slg_rpg", perf: 2.1, exp: 2.9, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方模拟器 / 云游戏", tier: "Tier 3: 相仿/互有优缺", desc: "Live2D 沉浸式互动在手机单手握持更具私密陪伴感；PC 大屏立绘清晰但交互割裂。", rank: "畅销榜 #31" },
+      { id: "zombie", name: "向僵尸开炮", cat: "casual", perf: 1.1, exp: 3.0, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "微信电脑版小程序", tier: "Tier 3: 相仿/互有优缺", desc: "电脑挂机摸鱼省电 vs 手机随手点开单局肉鸽。", rank: "畅销榜 #15" },
+      { id: "hlddz", name: "腾讯欢乐斗地主", cat: "casual", perf: 1.0, exp: 2.9, soc: "骁龙 660 / 苹果 A11", topSoc: "骁龙 680 / 苹果 A12", pcTech: "QQ游戏大厅 / 微信PC版", tier: "Tier 3: 相仿/互有优缺", desc: "电脑能多开摸鱼；手机端单手触控划牌更随性舒服。", rank: "畅销榜 #19" },
+
+      { id: "hok", name: "王者荣耀", cat: "moba", perf: 2.3, exp: 2.0, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "应用宝电脑版 / 模拟器", tier: "Tier 4: 比手机端稍差", desc: "触控双摇杆 360° 极坐标瞬时指向是其交互核心。在电脑端无论改用鼠标寻路还是 WASD 走位，反向位移与指向技能均显生硬，操作平滑度显著逊于手机手搓。", rank: "国民霸榜 #1" },
+      { id: "cfm", name: "CF-枪战王者", cat: "fps", perf: 2.2, exp: 2.1, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方手游助手模拟器", tier: "Tier 4: 比手机端稍差", desc: "模拟器实行键鼠独立匹配池，充斥巨量人机且外挂多；且 PC 玩家通常直接玩端游原版 CF。", rank: "畅销榜 #2" },
+      { id: "dnfm", name: "DNF：起源", cat: "act", perf: 2.6, exp: 2.0, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "腾讯手游助手打包版 (非原生)", tier: "Tier 4: 比手机端稍差", desc: "技能针对触屏做了滑屏搓招合并，在模拟器映射到键盘后节奏割裂，不如手搓顺滑，又无端游原生打击感。", rank: "畅销榜 #5" },
+      { id: "naruto", name: "火影忍者", cat: "act", perf: 2.3, exp: 2.3, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "腾讯手游助手模拟器", tier: "Tier 4: 比手机端稍差", desc: "键盘四向移动虽准，但滑屏替身与技能密卷在触屏更有肌肉记忆，模拟器存在按键判定延迟。", rank: "畅销榜 #13" },
+      { id: "brawl", name: "荒野乱斗", cat: "sc", perf: 1.4, exp: 2.1, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A14", pcTech: "Google Play Games PC", tier: "Tier 4: 比手机端稍差", desc: "双拇指走位与甩大瞄准极其依赖触屏灵敏度，PC 键鼠映射有明显回中迟滞与死区，高杯局操作精准度倒退。", rank: "SC 核心" },
+      { id: "squad", name: "爆裂小队", cat: "sc", perf: 2.0, exp: 2.0, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "Google Play Games PC", tier: "Tier 4: 比手机端稍差", desc: "纯粹为双指触控设计的单摇杆走位+单键冲刺，搬到 PC 键盘控制转向显得笨拙冗余。", rank: "SC 新游" },
+      { id: "fc_mobile", name: "FC足球世界", cat: "moba", perf: 2.8, exp: 2.2, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "模拟器键位映射", tier: "Tier 4: 比手机端稍差", desc: "触屏滑动传切球弧线与直塞手感无法被键盘完全还原。", rank: "畅销榜 #20" },
+      { id: "eggy", name: "蛋仔派对", cat: "act", perf: 2.4, exp: 2.2, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方桌面模拟器", tier: "Tier 4: 比手机端稍差", desc: "扑击跳跃与滚球视角的灵敏度在模拟器转译下有明显粘滞与死区，匹配独立隔离。", rank: "畅销榜 #39" },
+      { id: "pes", name: "实况足球", cat: "moba", perf: 2.8, exp: 2.2, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "模拟器键位映射", tier: "Tier 4: 比手机端稍差", desc: "虚拟摇杆与花式假动作搓招在触屏上更自然。", rank: "畅销榜 #50" },
+      { id: "best_ball", name: "最佳球会", cat: "moba", perf: 2.5, exp: 2.1, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "模拟器键位映射", tier: "Tier 4: 比手机端稍差", desc: "触控双摇杆传射比键盘更流畅直观。", rank: "畅销榜 #47" },
+
+      { id: "xxl", name: "开心消消乐", cat: "casual", perf: 1.0, exp: 1.1, soc: "骁龙 660 / 苹果 A11", topSoc: "骁龙 680 / 苹果 A12", pcTech: "无官方端 / 网页版", tier: "Tier 5: 完全没有/极差", desc: "单指在屏幕上滑块消除的减压手感，用鼠标拖动不仅慢，且完全丧失触觉反馈。", rank: "畅销榜 #10" },
+      { id: "wildrift", name: "英雄联盟手游", cat: "moba", perf: 2.8, exp: 1.2, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "官方严禁模拟器 (防作弊)", tier: "Tier 5: 完全没有/极差", desc: "防作弊系统严打模拟器封号；双摇杆在 PC 上极其别扭，且端游原版已是天花板。", rank: "畅销榜 #17" },
+      { id: "bydz", name: "捕鱼大作战", cat: "casual", perf: 1.1, exp: 1.0, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "无独立端 / 模拟器", tier: "Tier 5: 完全没有/极差", desc: "街机捕鱼需要纯触屏点按爆发，电脑玩毫无沉浸感。", rank: "畅销榜 #14" },
+      { id: "fgo", name: "Fate/Grand Order", cat: "slg_rpg", perf: 2.1, exp: 1.1, soc: "骁龙 778G / 苹果 A13", topSoc: "骁龙 870 / 苹果 A15", pcTech: "无官方端 / 严打模拟器", tier: "Tier 5: 完全没有/极差", desc: "长年更新针对模拟器的底层检测，易封号闪退；2D 点选指令卡牌大屏毫无增益。", rank: "海外/国内常青" },
+      { id: "monster_strike", name: "怪物弹珠", cat: "casual", perf: 1.2, exp: 1.0, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "完全无 PC 端", tier: "Tier 5: 完全没有/极差", desc: "完全依托单指蓄力拉扯、微调撞击反弹角。鼠标拖动缺乏物理阻尼感，触控核心丧失。", rank: "日本长期 #1" },
+      { id: "monopoly_go", name: "Monopoly GO!", cat: "casual", perf: 1.1, exp: 1.0, soc: "骁龙 680 / 苹果 A11", topSoc: "骁龙 778G / 苹果 A13", pcTech: "完全无 PC 端", tier: "Tier 5: 完全没有/极差", desc: "完全依托单手竖屏掷骰子、震动反馈与即时好友破盾社交，在 PC 上毫无使用场景。", rank: "全球流水巨无霸" },
+      { id: "hayday", name: "卡通农场 (Hay Day)", cat: "sc", perf: 1.0, exp: 1.1, soc: "骁龙 660 / 苹果 A11", topSoc: "骁龙 680 / 苹果 A12", pcTech: "无独立端 / 模拟器", tier: "Tier 5: 完全没有/极差", desc: "单指划过屏幕收割麦田、滑动投喂饲料的治愈手感用鼠标拖拽极其枯燥机械。", rank: "SC 经典" },
+      { id: "garden", name: "梦幻花园", cat: "casual", perf: 1.0, exp: 1.1, soc: "骁龙 660 / 苹果 A11", topSoc: "骁龙 680 / 苹果 A12", pcTech: "无独立 PC 端", tier: "Tier 5: 完全没有/极差", desc: "经典三消休闲，移动端单手操作专属。", rank: "畅销榜 #48" },
+      { id: "buyu_daka", name: "捕鱼大咖/途游捕鱼", cat: "casual", perf: 1.0, exp: 1.0, soc: "骁龙 660 / 苹果 A11", topSoc: "骁龙 680 / 苹果 A12", pcTech: "无独立端", tier: "Tier 5: 完全没有/极差", desc: "纯街机触控点按，电脑端缺乏消费与游玩土壤。", rank: "畅销榜 #21/32" },
+      { id: "mahjong", name: "指尖四川麻将/多乐够级", cat: "casual", perf: 1.0, exp: 1.2, soc: "骁龙 660 / 苹果 A11", topSoc: "骁龙 680 / 苹果 A12", pcTech: "微信端 / 模拟器", tier: "Tier 5: 完全没有/极差", desc: "纯触屏随时随地出牌，电脑大屏缺乏场景粘性。", rank: "畅销榜 #24/29" },
+      { id: "ba_jp", name: "蔚蓝档案 (Blue Archive)", cat: "slg_rpg", perf: 2.6, exp: 1.3, soc: "骁龙 870 / 苹果 A14", topSoc: "骁龙 8 Gen 2 / 苹果 A16", pcTech: "海外仅模拟器 (易闪退)", tier: "Tier 5: 完全没有/极差", desc: "海外版长期无原生 PC 客户端，模拟器常年存在内存泄漏掉帧与反作弊环境报错。", rank: "海外常青" },
+      { id: "taoyuan", name: "桃源深处有人家", cat: "casual", perf: 1.2, exp: 1.3, soc: "骁龙 680 / 苹果 A12", topSoc: "骁龙 778G / 苹果 A13", pcTech: "无独立客户端", tier: "Tier 5: 完全没有/极差", desc: "竖屏田园小憩摸鱼，手机随手掏出更有治愈感。", rank: "畅销榜 #46" }
+    ];
+
+    function getX(perf) { return 140 + ((perf - 1) / 4) * (730 - 140); }
+    function getY(exp) { return 420 - ((exp - 1) / 4) * (420 - 60); }
+
+    const catColors = {
+      act: "#38bdf8", fps: "#3b82f6", moba: "#f43f5e",
+      slg_rpg: "#34d399", sc: "#fbbf24", casual: "#64748b"
+    };
+
+    const labelConfigs = {
+      "genshin": { name: "原神", dx: -36, dy: -22 },
+      "wuthering": { name: "鸣潮", dx: 26, dy: -18 },
+      "delta": { name: "三角洲行动", dx: 26, dy: 22 },
+      "valorant_m": { name: "无畏契约", dx: -42, dy: 22 },
+      "gp": { name: "和平精英", dx: -58, dy: -18 },
+      "zzz": { name: "绝区零", dx: 18, dy: -24 },
+      "hok": { name: "王者荣耀", dx: 28, dy: 16 },
+      "mhxy": { name: "梦幻西游", dx: -54, dy: -14 },
+      "coc": { name: "部落冲突", dx: 26, dy: 20 },
+      "brawl": { name: "荒野乱斗", dx: 24, dy: -18 },
+      "xxl": { name: "消消乐", dx: 24, dy: -20 },
+      "hsr": { name: "星穹铁道", dx: 24, dy: -16 }
+    };
+
+    let currentCategory = 'all';
+    let selectedGameId = 'genshin';
+
+    function renderScatter() {
+      const pointsLayer = document.getElementById('points-layer');
+      pointsLayer.innerHTML = '';
+
+      const filtered = gamesData.filter(g => currentCategory === 'all' || g.cat === currentCategory);
+      document.getElementById('visible-count').innerText = `显示 ${filtered.length} 款游戏`;
+
+      filtered.forEach(g => {
+        g.baseX = getX(g.perf);
+        g.baseY = getY(g.exp);
+        g.x = g.baseX;
+        g.y = g.baseY;
+      });
+
+      const minDist = 16.5;
+      for (let iter = 0; iter < 45; iter++) {
+        for (let i = 0; i < filtered.length; i++) {
+          for (let j = i + 1; j < filtered.length; j++) {
+            let dx = filtered[j].x - filtered[i].x;
+            let dy = filtered[j].y - filtered[i].y;
+            let dist = Math.hypot(dx, dy);
+            if (dist < minDist) {
+              if (dist === 0) {
+                const angle = ((i * 11 + j * 17) % 360) * (Math.PI / 180);
+                dx = Math.cos(angle) * 3;
+                dy = Math.sin(angle) * 3;
+                dist = Math.hypot(dx, dy);
+              }
+              const push = (minDist - dist) / 2;
+              const nx = dx / dist;
+              const ny = dy / dist;
+              filtered[i].x -= nx * push * 0.75;
+              filtered[i].y -= ny * push * 0.75;
+              filtered[j].x += nx * push * 0.75;
+              filtered[j].y += ny * push * 0.75;
+            }
+          }
+        }
+        filtered.forEach(g => {
+          g.x += (g.baseX - g.x) * 0.12;
+          g.y += (g.baseY - g.y) * 0.12;
+          g.x = Math.max(92, Math.min(758, g.x));
+          g.y = Math.max(48, Math.min(432, g.y));
+        });
+      }
+
+      // Leader lines and badges
+      filtered.forEach(game => {
+        const cfg = labelConfigs[game.id];
+        if (cfg) {
+          const lx = game.x + cfg.dx;
+          const ly = game.y + cfg.dy;
+          const color = catColors[game.cat] || '#38bdf8';
+
+          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", game.x);
+          line.setAttribute("y1", game.y);
+          line.setAttribute("x2", lx);
+          line.setAttribute("y2", ly);
+          line.setAttribute("stroke", color);
+          line.setAttribute("stroke-opacity", "0.4");
+          line.setAttribute("stroke-width", "1");
+          line.setAttribute("stroke-dasharray", "2,2");
+          pointsLayer.appendChild(line);
+
+          const badgeWidth = cfg.name.length * 11 + 14;
+          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          rect.setAttribute("x", lx - badgeWidth / 2);
+          rect.setAttribute("y", ly - 9);
+          rect.setAttribute("width", badgeWidth);
+          rect.setAttribute("height", 18);
+          rect.setAttribute("rx", 5);
+          rect.setAttribute("fill", "#0f172a");
+          rect.setAttribute("fill-opacity", "0.92");
+          rect.setAttribute("stroke", color);
+          rect.setAttribute("stroke-width", "1");
+          rect.setAttribute("stroke-opacity", "0.65");
+          rect.style.cursor = "pointer";
+          rect.onclick = () => selectGame(game.id);
+          pointsLayer.appendChild(rect);
+
+          const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          text.setAttribute("x", lx);
+          text.setAttribute("y", ly + 3.5);
+          text.setAttribute("fill", color);
+          text.setAttribute("font-size", "10");
+          text.setAttribute("font-weight", "600");
+          text.setAttribute("text-anchor", "middle");
+          text.style.cursor = "pointer";
+          text.style.userSelect = "none";
+          text.textContent = cfg.name;
+          text.onclick = () => selectGame(game.id);
+          pointsLayer.appendChild(text);
+        }
+      });
+
+      // Dots
+      filtered.forEach((game) => {
+        const color = catColors[game.cat] || '#38bdf8';
+        const isSelected = game.id === selectedGameId;
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", game.x);
+        circle.setAttribute("cy", game.y);
+        circle.setAttribute("r", isSelected ? "9.5" : "6.5");
+        circle.setAttribute("fill", color);
+        circle.setAttribute("stroke", isSelected ? "#ffffff" : "#0f172a");
+        circle.setAttribute("stroke-width", isSelected ? "2.5" : "1.5");
+        circle.setAttribute("class", `point-circle ${isSelected ? 'active-point' : ''}`);
+        circle.setAttribute("id", `point-${game.id}`);
+
+        circle.addEventListener('mouseenter', (e) => showTooltip(e, game));
+        circle.addEventListener('mouseleave', hideTooltip);
+        circle.addEventListener('click', () => selectGame(game.id));
+
+        pointsLayer.appendChild(circle);
+      });
+    }
+
+    function showTooltip(e, game) {
+      const tooltip = document.getElementById('chart-tooltip');
+      document.getElementById('tooltip-title').textContent = game.name;
+      document.getElementById('tooltip-sub').textContent = `性能: L${game.perf} | ${game.tier.split(':')[0]}`;
+
+      const tipX = game.x > 600 ? game.x - 175 : game.x + 12;
+      const tipY = game.y > 400 ? game.y - 60 : game.y - 20;
+
+      tooltip.setAttribute("transform", `translate(${tipX}, ${tipY})`);
+      tooltip.style.opacity = '1';
+    }
+
+    function hideTooltip() {
+      document.getElementById('chart-tooltip').style.opacity = '0';
+    }
+
+    function selectGame(id) {
+      selectedGameId = id;
+      const game = gamesData.find(g => g.id === id);
+      if (!game) return;
+
+      document.getElementById('card-name').innerText = game.name;
+      document.getElementById('card-rank').innerText = `${game.rank} | 性能等级 L${game.perf}`;
+      document.getElementById('card-tier-badge').innerText = game.tier;
+      document.getElementById('card-soc').innerText = game.soc;
+      document.getElementById('card-top-soc').innerText = game.topSoc || "骁龙 8 Elite / 苹果 A19 Pro";
+      document.getElementById('card-pc-tech').innerText = game.pcTech;
+      document.getElementById('card-desc').innerText = game.desc;
+      
+      const catBadge = document.getElementById('card-category');
+      catBadge.innerText = getCatName(game.cat);
+      catBadge.style.color = catColors[game.cat];
+
+      renderScatter();
+      highlightTableRow(id);
+    }
+
+    function getCatName(c) {
+      switch(c) {
+        case 'act': return '开放世界 / 3D动作';
+        case 'fps': return '战术射击 / 撤离';
+        case 'moba': return '竞技MOBA / 双摇杆';
+        case 'slg_rpg': return '回合制 / SLG / 放置';
+        case 'sc': return 'Supercell 专属';
+        case 'casual': return '休闲 / 消除 / 捕鱼';
+        default: return '其他品类';
+      }
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.btn-cat').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-${cat}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderScatter();
+      renderTable();
+    }
+
+    function toggleTrendLine() {
+      const show = document.getElementById('toggle-trend').checked;
+      document.getElementById('trend-overall').style.display = show ? 'block' : 'none';
+    }
+
+    function toggleQuadrants() {
+      const show = document.getElementById('toggle-quadrant').checked;
+      document.getElementById('quadrants-layer').style.display = show ? 'block' : 'none';
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('games-table-body');
+      tbody.innerHTML = '';
+
+      const query = (document.getElementById('table-search').value || '').toLowerCase();
+      const filtered = gamesData.filter(g => {
+        const matchCat = currentCategory === 'all' || g.cat === currentCategory;
+        const matchQuery = !query || g.name.toLowerCase().includes(query) || g.soc.toLowerCase().includes(query) || g.tier.toLowerCase().includes(query);
+        return matchCat && matchQuery;
+      });
+
+      filtered.forEach(game => {
+        const tr = document.createElement('tr');
+        tr.id = `row-${game.id}`;
+        tr.className = `data-row ${game.id === selectedGameId ? 'active-row' : ''}`;
+        tr.onclick = () => selectGame(game.id);
+
+        const tierColor = game.exp >= 4.8 ? '#38bdf8' : (game.exp >= 3.8 ? '#34d399' : (game.exp >= 2.8 ? '#fbbf24' : (game.exp >= 1.8 ? '#f43f5e' : '#94a3b8')));
+
+        tr.innerHTML = `
+          <td style="font-weight: 600; color: #fff; display: flex; align-items: center; gap: 6px;">
+            <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${catColors[game.cat]}"></span>
+            ${game.name}
+          </td>
+          <td class="text-sub">${getCatName(game.cat).split('/')[0]}</td>
+          <td style="text-align: center; font-family: monospace; color: #fff;">L${game.perf}</td>
+          <td>${game.soc}</td>
+          <td class="text-sub" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${game.pcTech}</td>
+          <td style="text-align: center; font-weight: 600; color: ${tierColor}">${game.tier.split(':')[0]}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function highlightTableRow(id) {
+      document.querySelectorAll('#games-table-body tr').forEach(tr => tr.classList.remove('active-row'));
+      const row = document.getElementById(`row-${id}`);
+      if (row) {
+        row.classList.add('active-row');
+        row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function handleTableSearch() { renderTable(); }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      renderScatter();
+      renderTable();
+      selectGame('genshin');
+    });
+  </script>
+</body>
+</html>
